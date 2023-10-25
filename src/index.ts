@@ -1,49 +1,58 @@
-import express, {
-	type Application,
-	type Request,
-	type Response,
-} from 'express';
+import express, { type Application, type Response } from 'express';
 import bodyParser from 'body-parser';
 import http from 'http';
-// eslint-disable-next-line
 import cors from 'cors';
+import mongoose from 'mongoose';
 import ServerSocket from './socket';
+import CompanyModel from './models/company.model';
+import UserModel from './models/user.model';
 
 const PORT = process.env.PORT || 3001;
+const MONGO_URL = '';
 const app: Application = express();
+
 app.use(
 	cors({
 		origin: '*',
 	}),
 );
 
-const httpServer = http.createServer(app);
-
-// eslint-disable-next-line
-new ServerSocket(httpServer);
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get(
-	'/',
-	async (req: Request, res: Response): Promise<Response> =>
-		res.status(200).send({
-			message: 'Hello World!',
-		}),
-);
+mongoose.connect(MONGO_URL);
 
-app.post(
-	'/post',
-	async (req: Request, res: Response): Promise<Response> =>
-		res.status(200).send({
-			message: 'Hello World from post!',
-		}),
-);
+const httpServer = http.createServer(app);
 
-httpServer.listen({ port: PORT }, (): void => {
-	// eslint-disable-next-line no-console
-	console.log(`🚀 Server ready at http://localhost:${PORT}`);
+const socket = new ServerSocket();
+socket.CreateServer(httpServer);
+
+app.get('/', async (_, res: Response): Promise<Response> => {
+	const company = new CompanyModel({
+		name: 'Banana Company',
+		users: [],
+	});
+	company.save();
+
+	const { _id: companyId } = company;
+
+	const user = new UserModel({
+		name: 'banana',
+		email: 'banana@banana.com',
+		status: 'online',
+		company: companyId,
+	});
+
+	user.save();
+	const { _id: userId } = user;
+
+	company.users.push(userId);
+
+	return res.status(200).send({
+		message: 'Hello World!',
+	});
 });
+
+httpServer.listen({ port: PORT });
 
 export default app;
