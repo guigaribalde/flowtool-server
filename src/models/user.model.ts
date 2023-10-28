@@ -21,6 +21,9 @@ const UserSchema = new Schema({
 		ref: 'Company',
 		required: true,
 	},
+	socketId: {
+		type: String,
+	},
 });
 
 export default mongoose.model('User', UserSchema);

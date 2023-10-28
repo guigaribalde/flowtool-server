@@ -1,6 +1,7 @@
 import { Server as HTTPServer } from 'http';
 import { Socket, Server } from 'socket.io';
 import registerCursorHandler from './handlers/cursor.handler';
+import registerUserHandler from './handlers/user.handler';
 
 export default class ServerSocket {
 	public io: Server;
@@ -19,12 +20,14 @@ export default class ServerSocket {
 			pingTimeout: 5000,
 			cookie: false,
 		});
-		// this.io.on('connect', this.StartListeners);
+		this.io.on('connect', this.StartListeners);
 		this.io.of('/cursor').on('connect', this.StartCursorListeners);
 		console.info('Socket server initialized');
 	};
 
-	// StartListeners = (socket: Socket): void => {};
+	StartListeners = (socket: Socket): void => {
+		registerUserHandler({ io: this.io, socket });
+	};
 
 	StartCursorListeners = (socket: Socket): void => {
 		registerCursorHandler({ io: this.io, socket });
