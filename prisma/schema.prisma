@@ -1,0 +1,93 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Status {
+  online
+  offline
+}
+
+enum InviteStatus {
+  pending
+  accepted
+  declined
+}
+
+enum UserRole {
+  admin
+  member
+  owner
+}
+
+model User {
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  clerkId         String            @unique
+  email           String
+  username        String
+  status          Status?           @default(offline)
+  socketId        String?
+  UserOnWorkSpace UserOnWorkSpace[]
+}
+
+model Space {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  WorkSpace   WorkSpace @relation(fields: [workSpaceId], references: [id])
+  workSpaceId String    @db.ObjectId
+
+  boards Board[]
+}
+
+model WorkSpace {
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  Space           Space[]
+  UserOnWorkSpace UserOnWorkSpace[]
+}
+
+model UserOnWorkSpace {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  workSpaceId String    @db.ObjectId
+  workSpace   WorkSpace @relation(fields: [workSpaceId], references: [id])
+  userId      String?   @db.ObjectId
+  user        User?     @relation(fields: [userId], references: [id])
+
+  invitedUserEmail String?
+
+  userRole     UserRole     @default(member)
+  inviteStatus InviteStatus @default(pending)
+}
+
+model Board {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  name    String
+  columns Column[]
+
+  Space   Space?  @relation(fields: [spaceId], references: [id])
+  spaceId String? @db.ObjectId
+}
+
+model Column {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  name  String
+  index Int
+
+  tasks Task[]
+
+  Board   Board?  @relation(fields: [boardId], references: [id])
+  boardId String? @db.ObjectId
+}
+
+model Task {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  name  String
+  index Int
+
+  Column   Column? @relation(fields: [columnId], references: [id])
+  columnId String? @db.ObjectId
+}
