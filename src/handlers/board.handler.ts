@@ -123,7 +123,7 @@ export default function boardHandler({ socket, sessions }: HandlerProps) {
 			console.log(result);
 
 			// TODO: Stopped here
-			// emit event with column
+			socket.broadcast.to(spaceId).emit('create:column', result);
 		},
 	);
 }
