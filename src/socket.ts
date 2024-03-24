@@ -36,8 +36,8 @@ export default class ServerSocket {
 			} else next(new Error('invalid'));
 		});
 
-		this.io.on('connect', this.StartListeners);
-		this.io.of('/cursor').on('connect', this.StartCursorListeners);
+		this.io.on('connection', this.StartListeners);
+		this.io.of('/cursor').on('connection', this.StartCursorListeners);
 		console.info('Socket server initialized');
 	};
 
@@ -46,6 +46,7 @@ export default class ServerSocket {
 		registerBoardHandler({ io: this.io, socket, sessions: this.sessions });
 
 		socket.on('disconnect', () => {
+			console.log('disconnect');
 			const spaceId = this.sessions.GetUserSpaceIdBySocketId(socket.id);
 			this.sessions.RemoveUserBySocketId(socket.id);
 			const users = this.sessions.GetUsers(spaceId);
@@ -55,6 +56,6 @@ export default class ServerSocket {
 	};
 
 	StartCursorListeners = (socket: Socket): void => {
-		registerCursorHandler({ io: this.io, socket });
+		registerCursorHandler({ io: this.io, socket, sessions: this.sessions });
 	};
 }

@@ -26,7 +26,6 @@ export default function userHandler({ socket, sessions }: HandlerProps) {
 	socket.on(
 		'user:handshake',
 		async ({ spaceId, userId }: HandshakeProps, callback: Callback) => {
-			console.log(spaceId, userId);
 			const verify = auth(socket);
 
 			if (!verify) return;
